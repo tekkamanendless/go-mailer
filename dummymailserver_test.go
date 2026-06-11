@@ -12,10 +12,19 @@ import (
 
 func TestDummyMailServer(t *testing.T) {
 	t.Run("First function call", func(t *testing.T) {
+		t.Run("Initial state", func(t *testing.T) {
+			mailServer := mailer.DummyMailServer{}
+			assert.Equal(t, []string{}, mailServer.APIKeys())
+			assert.Equal(t, []string{}, mailServer.Addresses("api-key-1"))
+		})
 		t.Run("Send", func(t *testing.T) {
 			mailServer := mailer.DummyMailServer{}
 			err := mailServer.Send("api-key-1", mailer.Message{From: mail.Address{Address: "sender@example.com"}, To: mail.Address{Address: "receiver@example.com"}, Subject: "Test1"})
 			assert.Nil(t, err)
+
+			assert.Equal(t, []string{"api-key-1"}, mailServer.APIKeys())
+			assert.Equal(t, []string{"receiver@example.com", "sender@example.com"}, mailServer.Addresses("api-key-1"))
+			assert.Equal(t, []string{}, mailServer.Addresses("BOGUS"))
 		})
 		t.Run("Outbox", func(t *testing.T) {
 			mailServer := mailer.DummyMailServer{}
